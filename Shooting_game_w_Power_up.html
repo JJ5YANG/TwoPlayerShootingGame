@@ -1,0 +1,965 @@
+<html>
+  <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.14/p5.js"></script>
+    
+  </head>
+  <body>
+  <SCRIPT LANGUAGE="JavaScript">
+  
+  /**
+  -------------------------------------------------------------------------------------------
+  
+  Creator: Justin Yang
+  Date: January 19, 2017
+  Program Name: Shooting_game_w_Power_up
+  Description: This program is a shape-shooting game with two gamemodes,
+  player vs player and player vs CPU. If the gamemode is player vs player, both players have
+  to try and drop the other person's HP to 0. First one to defeat the opponent wins. If the
+  gamemode is player vs CPU, player has to try to defeat the CPU before it wins. Throughout
+  the game, power-ups will spawn at random that gives different advantages.
+    
+  -------------------------------------------------------------------------------------------
+  **/
+  
+  var screenX = 5000;
+  var line1 = "";
+  var line2 = "";
+  var line3 = "";
+  var line4 = "";
+  var line5 = "";
+  var line6 = "";
+  var line7 = "";
+  var line8 = "";
+  
+  var cpu_player_mode = "CPU Mode";
+  var cpuOpt = false;
+  var cpu_x_pos = [600, 650, 700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150];
+  var cpu_y_pos = [50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550];
+  var positionIndexY = 5;
+  var positionIndexX = 6;
+  
+  var rect_x1 = 250;
+  var rect_y1 = 300;
+  var rect_x2 = 900;
+  var rect_y2 = 300;
+  
+  var shoot_x1_pos = rect_x1 + 40;
+  var shoot_y1_pos = rect_y1 + 25;
+  
+  var shoot_x2_pos = rect_x2 + 10;
+  var shoot_y2_pos = rect_y2 + 25;
+  
+  var shoot_x1 = 0;
+  var shoot_x2 = 0;
+  
+  var score1 = 100;
+  var score2 = 100;
+  
+  var shield_x1 = 300;
+  var shield_y1 = 100;
+  var shield_hp1 = 150;
+  
+  var shield_x2 = 860;
+  var shield_y2 = 400;
+  var shield_hp2 = 150;
+
+  var rect_fill_b1 = 255;
+  var rect_fill_b2 = 255;
+  var rect_fill_r1 = 0;
+  var rect_fill_r2 = 0;
+  
+  var fire_ball_y1_fill = 0;
+  var fire_ball_y2_fill = 0;
+  var fire_ball_y = 1000;
+  var fire_ball_y1_ammo = 12;
+  var fire_ball_y2_ammo = 12;
+  var fire_shoot_x1_pos = rect_x1 + 40;
+  var fire_shoot_y1_pos = rect_y1 + 25;
+  var fire_shoot_x2_pos = rect_x2 + 10;
+  var fire_shoot_y2_pos = rect_y2 + 25;
+  
+  var health_pack_y;
+  var hidden_health_pack_y = 1000;
+  var hidden_health_pack_y_set = [75, 125, 175, 225, 275, 325, 475, 425, 475, 525, 575];
+  
+  var randomizer;
+  var fire_ball_location;
+  var fire_ball_location_set = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+  var fire_ball_location_value = [75, 125, 175, 225, 275, 325, 375, 425, 475, 525, 575];
+  
+  var winnerAnnouncement = "";
+  var playAgain = "";
+  
+  function setup(){
+    createCanvas(1200, 600);
+  }
+  
+  function draw(){
+    
+    //cpu shooting and positioning
+    if (cpuOpt == true){
+      if (score2 != 100 || shield_hp2 != 150){
+        let decision = Math.floor(Math.random() * 20)
+        if (shoot_x2 == 0 && decision < 5){
+          shoot_x2 = 5;
+          if (score2 <= 60 && score2 > 50){  //if CPU HP is less than or equal to 60 but greater than 50, CPU shoots at speed 4
+            shoot_x2 = 4;
+          } else if (score2 <= 50 && score2 > 40){  //if CPU HP is less than or equal to 50 but greater than 40, CPU shoots at speed 3
+            shoot_x2 = 3;
+          } else if (score2 <= 40 && score2 > 30){  //if CPU HP is less than or equal to 40 but greater than 30, CPU shoots at speed 2
+            shoot_x2 = 2;
+          } else if (score2 <= 30){  //if CPU HP is less than or equal to 30, CPU shoots at speed 1
+            shoot_x2 = 1;
+          }
+          
+          if (fire_ball_y2_fill == 255){
+            if (fire_shoot_x2_pos == rect_x2 + 10){
+              if (fire_shoot_y2_pos == rect_y2 + 25){
+                fire_ball_y2_ammo -= 1;
+              }
+            }
+          }
+        }
+
+
+
+        if (score2 > 0){
+          
+          if (rect_y2 < rect_y1){
+            if (positionIndexY < cpu_y_pos.length - 1 && decision == 1){
+              positionIndexY += 1;
+              rect_y2 = cpu_y_pos[positionIndexY];
+            }
+          } else if (rect_y2 > rect_y1){
+            if (positionIndexY > 0 && decision == 1){
+              positionIndexY -= 1;
+              rect_y2 = cpu_y_pos[positionIndexY];
+            }
+          } else {
+            if (decision < 4){
+              if (decision < 2 && positionIndexY < cpu_y_pos.length - 1){
+                positionIndexY += 1;
+                rect_y2 = cpu_y_pos[positionIndexY];
+              } else if (decision >= 2 && positionIndexY > 0){
+                positionIndexY -= 1;
+                rect_y2 = cpu_y_pos[positionIndexY];
+              }
+            } else {
+              rect_y2 = cpu_y_pos[positionIndexY];
+            }
+          }
+
+          if (decision < 1){
+            if (positionIndexX > 0){
+              positionIndexX -= 1;
+              rect_x2 = cpu_x_pos[positionIndexX];
+            }
+          } else if (decision < 3) {
+            if (positionIndexX < cpu_x_pos.length - 1){
+              positionIndexX += 1;
+              rect_x2 = cpu_x_pos[positionIndexX];
+            }
+          }
+        }
+
+        // rect_x2 = cpu_x_pos[Math.floor(Math.random() * cpu_x_pos.length)];
+        // rect_y2 = cpu_y_pos[Math.floor(Math.random() * cpu_y_pos.length)];
+      }
+    }
+    
+    
+    //background
+    stroke(0);
+    strokeWeight(12);
+    fill(255, 255, rect_fill_b1);
+    rect(0, 0, width/2, height);
+    fill(255, 255, rect_fill_b2);
+    rect(width/2, 0, width/2, height);
+    
+    stroke(215);
+    line(width/2, 0, width/2, height);
+    stroke(0);
+    strokeWeight(5);
+    line(0, 50, width, 50);
+    
+    
+    //cpu & instructions buttons
+    fill(0);
+    strokeWeight(4);
+    line(1200, 560, 1100, 560);
+    line(1100, 560, 1100, 600);
+    
+    line(0, 560, 100, 560);
+    line(100, 560, 100, 600);
+    
+    strokeWeight(1);
+    textFont('arial', 15);
+    
+    text("Instructions", 1110, 582);
+    text(cpu_player_mode, 15, 582);
+    
+    
+    //barriers
+    noStroke();
+    fill(0);
+    rect(shield_x1, shield_y1, 40, 150);
+    rect(shield_x2, shield_y2, 40, 150);
+    
+    
+    //ingame text
+    fill(0);
+    textFont('serif', 42);
+    text(score1, 125, 42);
+    text(score2, 725, 42);
+    text("HP", 50, 42);
+    text("HP", 650, 42);
+    text("BARRIER", 875, 42);
+    text("BARRIER", 275, 42);
+    text(shield_hp1, 490, 42);
+    text(shield_hp2, 1090, 42);
+    text(winnerAnnouncement, 390, height/2);
+    text(playAgain, 340, 350);
+    
+    
+    //health pack power up spawn location
+    fill(0, 255, 0);
+    ellipse(600, hidden_health_pack_y, 25, 25);  //properties of variable 'hidden_health_pack_y' found on line 597
+    
+    
+    //fireball power up spawn location
+    fill(255, 0, 0);
+    ellipse(600, fire_ball_y, 25, 25)
+    
+    if (score1 == 48 || score2 == 48){
+      if (fire_ball_y1_ammo == 12 || fire_ball_y2_ammo == 12){
+        fire_ball_y1_ammo -= 1;
+        fire_ball_y2_ammo -= 1;
+        randomizer = Math.floor(random(11) + 1)
+        
+        for (i = 0; i < fire_ball_location_set.length; i++){  //fireball power up spawn location determined by random number generated by variable 'randomizer'
+          if (randomizer == fire_ball_location_set[i]){
+            fire_ball_location = fire_ball_location_value[i];
+          }
+        }
+        
+        fire_ball_y = fire_ball_location;
+      }
+    }
+    
+    
+    //flash red when hit
+    noStroke();
+    fill(rect_fill_r1, 0, 0);
+    rect(rect_x1, rect_y1, 50, 50);
+    fill(rect_fill_r2, 0, 0);
+    rect(rect_x2, rect_y2, 50, 50);
+    
+    if (shoot_x1_pos == rect_x1 + 40 || fire_shoot_x1_pos == rect_x1 + 40){
+      rect_fill_r2 = 0;
+    }
+    if (shoot_x2_pos == rect_x2 + 10 || fire_shoot_x2_pos == rect_x1 + 10){
+      rect_fill_r1 = 0;
+    }
+    
+    
+    //player one bullet speed
+    fill(fire_ball_y1_fill, 0, 0);  //if 'fire_ball_y1_fill' is 255, shoots fireball at speed determined by variable 'shoot_x1'
+    
+    if (fire_ball_y1_fill == 0){
+      if (shoot_x1 == 1){
+        ellipse(shoot_x1_pos, shoot_y1_pos, 25, 25);
+        shoot_x1_pos += 20;  //shoots normal ball
+      }
+    } else if (fire_ball_y1_fill == 255){
+      if (shoot_x1 == 1){
+        ellipse(fire_shoot_x1_pos, fire_shoot_y1_pos, 25, 25);
+        fire_shoot_x1_pos += 20;  //shoots fire ball
+      }
+    }
+    
+    if (fire_ball_y1_fill == 0){
+      if (shoot_x1 == 2){
+        ellipse(shoot_x1_pos, shoot_y1_pos, 25, 25);
+        shoot_x1_pos += 25;
+      }
+    } else if (fire_ball_y1_fill == 255){
+      if (shoot_x1 == 2){
+        ellipse(fire_shoot_x1_pos, fire_shoot_y1_pos, 25, 25);
+        fire_shoot_x1_pos += 25;
+      }
+    }
+    
+    if (fire_ball_y1_fill == 0){
+      if (shoot_x1 == 3){
+        ellipse(shoot_x1_pos, shoot_y1_pos, 25, 25);
+        shoot_x1_pos += 30;
+      }
+    } else if (fire_ball_y1_fill == 255){
+      if (shoot_x1 == 3){
+        ellipse(fire_shoot_x1_pos, fire_shoot_y1_pos, 25, 25);
+        fire_shoot_x1_pos += 30;
+      }
+    }
+    
+    if (fire_ball_y1_fill == 0){
+      if (shoot_x1 == 4){
+        ellipse(shoot_x1_pos, shoot_y1_pos, 25, 25);
+        shoot_x1_pos += 35;
+      }
+    } else if (fire_ball_y1_fill == 255){
+      if (shoot_x1 == 4){
+        ellipse(fire_shoot_x1_pos, fire_shoot_y1_pos, 25, 25);
+        fire_shoot_x1_pos += 35;
+      }
+    }
+    
+    if (fire_ball_y1_fill == 0 && shoot_x1 == 5){
+      if (shoot_x1 == 5){
+        ellipse(shoot_x1_pos, shoot_y1_pos, 25, 25);
+        shoot_x1_pos += 40;
+      }
+    } else if (fire_ball_y1_fill == 255 && shoot_x1 == 5){
+      if (shoot_x1 == 5){
+        ellipse(fire_shoot_x1_pos, fire_shoot_y1_pos, 25, 25);
+        fire_shoot_x1_pos += 40
+      }
+    }
+    
+    if (fire_ball_y1_fill == 0){
+      if (shoot_x1 == 0){
+        shoot_x1_pos = rect_x1 + 40;
+        shoot_y1_pos = rect_y1 + 25;
+      }
+    } else if (fire_ball_y1_fill == 255 && shoot_x1 == 0){
+      if (shoot_x1 == 0){
+        fire_shoot_x1_pos = rect_x1 + 40;
+        fire_shoot_y1_pos = rect_y1 + 25;
+      }
+    }
+   
+    
+    //player two bullet speed
+    fill(fire_ball_y2_fill, 0, 0);  //if 'fire_ball_y2_fill' is 255, shoots fireball at speed determined by variable 'shoot_x2'
+    
+    if (fire_ball_y2_fill == 0){
+      if (shoot_x2 == 1){
+        ellipse(shoot_x2_pos, shoot_y2_pos, 25, 25);
+        shoot_x2_pos -= 20;
+      }
+    } else if (fire_ball_y2_fill == 255){
+      if (shoot_x2 == 1){
+        ellipse(fire_shoot_x2_pos, fire_shoot_y2_pos, 25, 25);
+        fire_shoot_x2_pos -= 20;
+      }
+    }
+    
+    if (fire_ball_y2_fill == 0){
+      if (shoot_x2 == 2){
+        ellipse(shoot_x2_pos, shoot_y2_pos, 25, 25);
+        shoot_x2_pos -= 25;
+      }
+    } else if (fire_ball_y2_fill == 255){
+      if (shoot_x2 == 2){
+        ellipse(fire_shoot_x2_pos, fire_shoot_y2_pos, 25, 25);
+        fire_shoot_x2_pos -= 25;
+      }
+    }
+    
+    if (fire_ball_y2_fill == 0){
+      if (shoot_x2 == 3){
+        ellipse(shoot_x2_pos, shoot_y2_pos, 25, 25);
+        shoot_x2_pos -= 30;
+      }
+    } else if (fire_ball_y2_fill == 255){
+      if (shoot_x2 == 3){
+        ellipse(fire_shoot_x2_pos, fire_shoot_y2_pos, 25, 25);
+        fire_shoot_x2_pos -= 30;
+      }
+    }
+    
+    if (fire_ball_y2_fill == 0){
+      if (shoot_x2 == 4){
+        ellipse(shoot_x2_pos, shoot_y2_pos, 25, 25);
+        shoot_x2_pos -= 35;
+      }
+    } else if (fire_ball_y2_fill == 255){
+      if (shoot_x2 == 4){
+        ellipse(fire_shoot_x2_pos, fire_shoot_y2_pos, 25, 25);
+        fire_shoot_x2_pos -= 35;
+      }
+    }
+    
+    if (fire_ball_y2_fill == 0){
+      if (shoot_x2 == 5){
+        ellipse(shoot_x2_pos, shoot_y2_pos, 25, 25);
+        shoot_x2_pos -= 40;
+      }
+    } else if (fire_ball_y2_fill == 255){
+      if (shoot_x2 == 5){
+        ellipse(fire_shoot_x2_pos, fire_shoot_y2_pos, 25, 25);
+        fire_shoot_x2_pos -= 40
+      }
+    }
+    
+    if (fire_ball_y2_fill == 0){
+      if (shoot_x2 == 0){
+        shoot_x2_pos = rect_x2 + 10;
+        shoot_y2_pos = rect_y2 + 25;
+      }
+    } else if (fire_ball_y2_fill == 255){
+      if (shoot_x2 == 0){
+        fire_shoot_x2_pos = rect_x2 + 10;
+        fire_shoot_y2_pos = rect_y2 + 25;
+      }
+    }
+    
+    
+    //collecting fireball power up
+    if (shoot_x1_pos >= 600 && shoot_x1_pos <= 700){
+      if (shoot_y1_pos == fire_ball_y){
+        fire_ball_y = 1000;
+        shoot_x1 = 0;
+        shoot_x1_pos = rect_x1 + 40;
+        shoot_y1_pos = rect_y1 + 25;
+        fire_ball_y1_fill = 255;
+      }
+    }
+    if (shoot_x2_pos <= 600 && shoot_x2_pos >= 500){
+      if (shoot_y2_pos == fire_ball_y){
+        fire_ball_y = 1000;
+        shoot_x2 = 0;
+        shoot_x2_pos = rect_x2 + 10;
+        shoot_y2_pos = rect_y2 + 25;
+        fire_ball_y2_fill = 255;
+      }
+    }
+    
+    
+    //collecting health pack power up
+    if (shoot_x1_pos >= 600 && shoot_x1_pos <= 700 && shoot_y1_pos == hidden_health_pack_y){
+      hidden_health_pack_y = 1000;
+      shoot_x1 = 0;
+      shoot_x1_pos = rect_x1 + 40;
+      shoot_y1_pos = rect_y1 + 25;
+      score1 += 35;
+      score2 -= 1;
+    }
+    
+    if (fire_shoot_x1_pos >= 600 && fire_shoot_x1_pos <= 700 && fire_shoot_y1_pos == hidden_health_pack_y){
+      hidden_health_pack_y = 1000;
+      shoot_x1 = 0;
+      fire_shoot_x1_pos = rect_x1 + 40;
+      fire_shoot_y1_pos = rect_y1 + 25;
+      score1 += 35;
+      score2 -= 1;
+    }
+    
+    if (shoot_x2_pos <= 600 && shoot_x2_pos >= 500 && shoot_y2_pos == hidden_health_pack_y){
+      hidden_health_pack_y = 1000;
+      shoot_x2 = 0;
+      shoot_x2_pos = rect_x2 + 10;
+      shoot_y2_pos = rect_y2 + 25;
+      score2 += 35;
+      score1 -= 1;
+    }
+    
+    if (fire_shoot_x2_pos <= 600 && fire_shoot_x2_pos >= 500 && fire_shoot_y2_pos == hidden_health_pack_y){
+      hidden_health_pack_y = 1000;
+      shoot_x2 = 0;
+      fire_shoot_x2_pos = rect_x2 + 10;
+      fire_shoot_y2_pos = rect_y2 + 25;
+      score2 += 35;
+      score1 -= 1;
+    }
+    
+    
+    //bullet reload after reaching the end of the screen
+    if (shoot_x1_pos >= 1200){
+      shoot_x1 = 0;
+      shoot_x1_pos = rect_x1 + 40;
+      shoot_y1_pos = rect_y1 + 25;
+    }
+    if (fire_shoot_x1_pos >= 1200){
+      shoot_x1 = 0;
+      fire_shoot_x1_pos = rect_x1 + 40;
+      fire_shoot_y1_pos = rect_y1 + 25;
+    }
+    if (shoot_x2_pos <= 0){
+      shoot_x2 = 0;
+      shoot_x2_pos = rect_x2 + 10;
+      shoot_y2_pos = rect_y2 + 25;
+    }
+    if (fire_shoot_x2_pos <= 0){
+      shoot_x2 = 0;
+      fire_shoot_x2_pos = rect_x2 + 10;
+      fire_shoot_y2_pos = rect_y2 + 25;
+    }
+    
+    
+    //if bullet hits player
+    if (shoot_x1_pos >= rect_x2 && shoot_x1_pos <= rect_x2 + 50){
+      if (shoot_y1_pos <= rect_y2 + 50 && shoot_y1_pos >= rect_y2){
+        shoot_x1 = 0;
+        shoot_x1_pos = rect_x1 + 40;
+        shoot_y1_pos = rect_y1 + 25;
+        score2 -= 4;
+        rect_fill_r2 = 255;
+      }
+    }
+    
+    if (fire_shoot_x1_pos >= rect_x2 && fire_shoot_x1_pos <= rect_x2 + 50){
+      if (fire_shoot_y1_pos <= rect_y2 + 50 && fire_shoot_y1_pos >= rect_y2){
+        shoot_x1 = 0;
+        fire_shoot_x1_pos = rect_x1 + 40;
+        fire_shoot_y1_pos = rect_y1 + 25;
+        score2 -= 8;
+        rect_fill_r2 = 255;
+      }
+    }
+    
+    if (shoot_x2_pos >= rect_x1 && shoot_x2_pos <= rect_x1 + 50){
+      if (shoot_y2_pos <= rect_y1 + 50 && shoot_y2_pos >= rect_y1){
+        shoot_x2 = 0;
+        shoot_x2_pos = rect_x2 + 10;
+        shoot_y2_pos = rect_y2 + 25;
+        score1 -= 4;
+        rect_fill_r1 = 255;
+      }
+    }
+    
+    if (fire_shoot_x2_pos >= rect_x1 && fire_shoot_x2_pos <= rect_x1 + 50){
+      if (fire_shoot_y2_pos <= rect_y1 + 50 && fire_shoot_y2_pos >= rect_y1){
+        shoot_x2 = 0;
+        fire_shoot_x2_pos = rect_x2 + 10;
+        fire_shoot_y2_pos = rect_y2 + 25;
+        score1 -= 8;
+        rect_fill_r1 = 255;
+      }
+    }
+    
+    
+    //if bullet hits barrier
+    if (shoot_x1_pos >= shield_x2 && shoot_x1_pos <= shield_x2 + 40){
+      if (shoot_y1_pos <= shield_y2 + 150 && shoot_y1_pos >= shield_y2){
+        shoot_x1 = 0
+        shoot_x1_pos = rect_x1 + 40;
+        shoot_y1_pos = rect_y1 + 25;
+        shield_hp2 -= 5;
+        if (shield_hp2 <= 0){
+          shield_y2 = 1500;
+        }
+      }
+    }
+    if (fire_shoot_x1_pos >= shield_x2 && fire_shoot_x1_pos <= shield_x2 + 40){
+      if (fire_shoot_y1_pos <= shield_y2 + 150 && fire_shoot_y1_pos >= shield_y2){
+        shoot_x1 = 0
+        fire_shoot_x1_pos = rect_x1 + 40;
+        fire_shoot_y1_pos = rect_y1 + 25;
+        shield_hp2 -= 10;
+        if (shield_hp2 <= 0){
+          shield_y2 = 1500;
+        }
+      }
+    }
+    
+    if (shoot_x2_pos >= shield_x1 && shoot_x2_pos <= shield_x1 + 40){
+      if (shoot_y2_pos <= shield_y1 + 150 && shoot_y2_pos >= shield_y1){
+        shoot_x2 = 0
+        shoot_x2_pos = rect_x2 + 40;
+        shoot_y2_pos = rect_y2 + 25;
+        shield_hp1 -= 5;
+        if (shield_hp1 <= 0){
+          shield_y1 = 1500;
+        }
+      }
+    }
+    if (fire_shoot_x2_pos >= shield_x1 && fire_shoot_x2_pos <= shield_x1 + 40){
+      if (fire_shoot_y2_pos <= shield_y1 + 150 && fire_shoot_y2_pos >= shield_y1){
+        shoot_x2 = 0
+        fire_shoot_x2_pos = rect_x2 + 40;
+        fire_shoot_y2_pos = rect_y2 + 25;
+        shield_hp1 -= 10;
+        if (shield_hp1 <= 0){
+          shield_y1 = 1500;
+        }
+      }
+    }
+    
+    
+    //if any score reaches 0, announce winner of the game
+    if (score1 <= 0){
+      winnerAnnouncement = "Player 2 Won the Game!";
+      playAgain = "Click the Screen to Play Again";
+      rect_y1 = 1000;
+      rect_fill_b2 = 0;
+      shoot_x1_pos = rect_x1 + 40;
+      shoot_y1_pos = rect_y1 + 25;
+    } else if (score2 <= 0){
+      winnerAnnouncement = "Player 1 Won the Game!";
+      playAgain = "Click the Screen to Play Again";
+      rect_y2 = 1000;
+      rect_fill_b1 = 0;
+      shoot_x2_pos = rect_x2 + 40;
+      shoot_y2_pos = rect_y2 + 25;
+    }
+    
+    
+    //after fireball power up runs out of ammo
+    if (fire_ball_y1_ammo == 0){
+      fire_ball_y1_fill = 0;
+      shoot_x1 = 0;
+      fire_ball_y1_ammo -= 1;
+      fire_shoot_x1_pos = rect_x1 + 40;
+      fire_shoot_y1_pos = rect_y1 + 25;
+    }
+    
+    if (fire_ball_y2_ammo == 0){
+      fire_ball_y2_fill = 0;
+      shoot_x2 = 0;
+      fire_ball_y2_ammo -= 1;
+      fire_shoot_x2_pos = rect_x2 + 10;
+      fire_shoot_y2_pos = rect_y2 + 25;
+    }
+    
+    
+    //place grey balls all over the power up line to hide where the health pack may be
+    if (score1 == 12 || score2 == 12){
+      health_pack_y = 75;
+      healthPowerup();
+      
+      if (hidden_health_pack_y == 1000){
+        hidden_health_pack_y = hidden_health_pack_y_set[Math.floor(Math.random() * hidden_health_pack_y_set.length)];
+      }
+    }
+    
+    
+    //instructions
+    fill(255);
+    rect(screenX, 53, 1188, 541);
+    
+    fill(0);
+    text(line1, 450, 100);
+    text(line2, 200, 140);
+    text(line3, 135, 180);
+    text(line4, 482, 250);
+    text(line5, 299, 290);
+    text(line6, 482, 360);
+    text(line7, 135, 400);
+    
+    textFont('arial', 30);
+    text(line8, 490, 570);
+  }
+  
+  
+  function healthPowerup(){
+    
+    while (health_pack_y < 600){
+      fill(100);
+      ellipse(600, health_pack_y, 25, 25);
+      health_pack_y += 50;
+    }
+  }
+  
+  
+  function mousePressed(){
+    if (score1 <= 0 || score2 <= 0){
+      positionIndexY = 5;
+      positionIndexX = 6;
+      rect_x1 = 250;
+      rect_y1 = 300;
+      rect_x2 = 900;
+      rect_y2 = 300;
+  
+      shoot_x1_pos = rect_x1 + 40;
+      shoot_y1_pos = rect_y1 + 25;
+  
+      shoot_x2_pos = rect_x2 + 10;
+      shoot_y2_pos = rect_y2 + 25;
+  
+      shoot_x1 = 0;
+      shoot_x2 = 0;
+  
+      score1 = 100;
+      score2 = 100;
+  
+      shield_x1 = 300;
+      shield_y1 = 100;
+      shield_hp1 = 150;
+  
+      shield_x2 = 860;
+      shield_y2 = 400;
+      shield_hp2 = 150;
+
+      rect_fill_b1 = 255;
+      rect_fill_b2 = 255;
+      rect_fill_r1 = 0;
+      rect_fill_r2 = 0;
+  
+      fire_ball_y1_fill = 0;
+      fire_ball_y2_fill = 0;
+      fire_ball_y = 1000;
+      fire_ball_y1_ammo = 12;
+      fire_ball_y2_ammo = 12;
+      fire_shoot_x1_pos = rect_x1 + 40;
+      fire_shoot_y1_pos = rect_y1 + 25;
+      fire_shoot_x2_pos = rect_x2 + 10;
+      fire_shoot_y2_pos = rect_y2 + 25;
+      
+      health_pack_y;
+      hidden_health_pack_y = 1000;
+      
+      randomizer;
+      fire_ball_location;
+  
+      winnerAnnouncement = "";
+      playAgain = "";
+    }
+    
+    if (mouseX >= 1100 && mouseX <= 1200 && mouseY >= 560 && mouseY <= 600){
+      screenX = 6;
+      line1 = "HOW TO PLAY";
+      line2 = "Player 1 moves using WASD and shoots with R";
+      line3 = "Player 2 moves using ARROW KEYS and shoots with P";
+      line4 = "OBJECTIVE";
+      line5 = "First to get opponent to 0 HP wins!";
+      line6 = "POWER UPS";
+      line7 = "Power Ups will appear on the Grey line, Shoot to Collect";
+      line8 = "Exit Instructions";
+    }
+    
+    if (mouseX >= 490 && mouseX <= 700 && mouseY >= 550 && mouseY <= 575){  //exit instructions button
+      screenX = 5000;
+      line1 = "";
+      line2 = "";
+      line3 = "";
+      line4 = "";
+      line5 = "";
+      line6 = "";
+      line7 = "";
+      line8 = "";
+    }
+    
+    if (mouseX >= 0 && mouseX <= 100 && mouseY >= 560 && mouseY <= 600 && cpu_player_mode == "CPU Mode"){  //button to turn on cpu mode
+      cpuOpt = true;
+      positionIndexY = 5;
+      positionIndexX = 6;
+      cpu_player_mode = "PLR Mode";
+      rect_x1 = 250;
+      rect_y1 = 300;
+      rect_x2 = 900;
+      rect_y2 = 300;
+  
+      shoot_x1_pos = rect_x1 + 40;
+      shoot_y1_pos = rect_y1 + 25;
+  
+      shoot_x2_pos = rect_x2 + 10;
+      shoot_y2_pos = rect_y2 + 25;
+  
+      shoot_x1 = 0;
+      shoot_x2 = 0;
+  
+      score1 = 100;
+      score2 = 100;
+  
+      shield_x1 = 300;
+      shield_y1 = 100;
+      shield_hp1 = 150;
+  
+      shield_x2 = 860;
+      shield_y2 = 400;
+      shield_hp2 = 150;
+
+      rect_fill_b1 = 255;
+      rect_fill_b2 = 255;
+      rect_fill_r1 = 0;
+      rect_fill_r2 = 0;
+  
+      fire_ball_y1_fill = 0;
+      fire_ball_y2_fill = 0;
+      fire_ball_y = 1000;
+      fire_ball_y1_ammo = 12;
+      fire_ball_y2_ammo = 12;
+      fire_shoot_x1_pos = rect_x1 + 40;
+      fire_shoot_y1_pos = rect_y1 + 25;
+      fire_shoot_x2_pos = rect_x2 + 10;
+      fire_shoot_y2_pos = rect_y2 + 25;
+      
+      health_pack_y;
+      hidden_health_pack_y = 1000;
+      
+      randomizer;
+      fire_ball_location;
+  
+      winnerAnnouncement = "";
+      playAgain = "";
+    } else if (mouseX >= 0 && mouseX <= 100 && mouseY >= 560 && mouseY <= 600 && cpu_player_mode == "PLR Mode"){  //button to turn on player vs player mode
+      cpuOpt = false;
+      positionIndexY = 5;
+      positionIndexX = 6;
+      cpu_player_mode = "CPU Mode";
+      rect_x1 = 250;
+      rect_y1 = 300;
+      rect_x2 = 900;
+      rect_y2 = 300;
+  
+      shoot_x1_pos = rect_x1 + 40;
+      shoot_y1_pos = rect_y1 + 25;
+  
+      shoot_x2_pos = rect_x2 + 10;
+      shoot_y2_pos = rect_y2 + 25;
+  
+      shoot_x1 = 0;
+      shoot_x2 = 0;
+  
+      score1 = 100;
+      score2 = 100;
+  
+      shield_x1 = 300;
+      shield_y1 = 100;
+      shield_hp1 = 150;
+  
+      shield_x2 = 860;
+      shield_y2 = 400;
+      shield_hp2 = 150;
+
+      rect_fill_b1 = 255;
+      rect_fill_b2 = 255;
+      rect_fill_r1 = 0;
+      rect_fill_r2 = 0;
+  
+      fire_ball_y1_fill = 0;
+      fire_ball_y2_fill = 0;
+      fire_ball_y = 1000;
+      fire_ball_y1_ammo = 12;
+      fire_ball_y2_ammo = 12;
+      fire_shoot_x1_pos = rect_x1 + 40;
+      fire_shoot_y1_pos = rect_y1 + 25;
+      fire_shoot_x2_pos = rect_x2 + 10;
+      fire_shoot_y2_pos = rect_y2 + 25;
+      
+      health_pack_y;
+      hidden_health_pack_y = 1000;
+      
+      randomizer;
+      fire_ball_location;
+  
+      winnerAnnouncement = "";
+      playAgain = "";
+    }
+  }
+  
+  
+  function keyPressed(){
+    
+    //player 2 controls
+    if (cpuOpt == false){
+      if (keyCode == UP_ARROW){
+        rect_y2 -= 50;
+        if (rect_y2 <= 50){
+          rect_y2 = 50;
+        }
+      }
+      else if (keyCode == DOWN_ARROW){
+        rect_y2 += 50;
+        if (rect_y2 >= 550){
+          rect_y2 = 550;
+        }
+      }
+      else if (keyCode == LEFT_ARROW){
+        rect_x2 -= 50;
+        if (rect_x2 <= 600){
+          rect_x2 = 600
+        }
+      }
+      else if (keyCode == RIGHT_ARROW){
+        rect_x2 += 50;
+        if (rect_x2 >= 1150){
+          rect_x2 = 1150
+        }
+      }
+    }
+  }
+  
+  
+  function keyTyped(){
+    
+    //player 1 controls
+    if (key == 'w'){
+      rect_y1 -= 50;
+      if (rect_y1 <= 50){
+        rect_y1 = 50;
+      }
+    }
+    else if (key == 's'){
+      rect_y1 += 50;
+      if (rect_y1 >= 550){
+        rect_y1 = 550;
+      }
+    }
+    else if (key == 'a'){
+      rect_x1 -= 50;
+      if (rect_x1 <= 0){
+        rect_x1 = 0;
+      }
+    }
+    else if (key == 'd'){
+      rect_x1 += 50;
+      if (rect_x1 >= 550){
+        rect_x1 = 550;
+      }
+    }
+    
+    
+    //shooting key player 1
+    if (key == 'r'){
+      shoot_x1 = 5;
+      if (score1 <= 60 && score1 > 50){  //if player 1 HP is less than or equal to 60 but greater than 50, player shoots at speed 4
+        shoot_x1 = 4;
+      } else if (score1 <= 50 && score1 > 40){  //if player 1 HP is less than or equal to 50 but greater than 40, player shoots at speed 3
+        shoot_x1 = 3;
+      } else if (score1 <= 40 && score1 > 30){  //if player 1 HP is less than or equal to 40 but greater than 30, player shoots at speed 2
+        shoot_x1 = 2;
+      } else if (score1 <= 30){  //if player 1 HP is less than or equal to 30, player shoots at speed 1
+        shoot_x1 = 1;
+      }
+      
+      //subtract fireball power up ammo by 1 every time player 1 shoots
+      if (fire_ball_y1_fill == 255){
+        if (fire_shoot_x1_pos == rect_x1 + 40){
+          if (fire_shoot_y1_pos == rect_y1 + 25){
+            fire_ball_y1_ammo -= 1;
+          }
+        }
+      }
+    }
+    
+    
+    //shooting key player 2
+    if (cpuOpt == false){
+      if (key == 'p'){
+        shoot_x2 = 5;
+        if (score2 <= 60 && score2 > 50){  //if player 2 HP is less than or equal to 60 but greater than 50, player shoots at speed 4
+          shoot_x2 = 4;
+        } else if (score2 <= 50 && score2 > 40){  //if player 2 HP is less than or equal to 50 but greater than 40, player shoots at speed 3
+          shoot_x2 = 3;
+        } else if (score2 <= 40 && score2 > 30){  //if player 2 HP is less than or equal to 40 but greater than 30, player shoots at speed 2
+          shoot_x2 = 2;
+        } else if (score2 <= 30){  //if player 2 HP is less than or equal to 30, player shoots at speed 1
+          shoot_x2 = 1;
+        }
+        
+        //subtract fireball power up ammo by 1 every time player 2 shoots
+        if (fire_ball_y2_fill == 255){
+          if (fire_shoot_x2_pos == rect_x2 + 10){
+            if (fire_shoot_y2_pos == rect_y2 + 25){
+              fire_ball_y2_ammo -= 1;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  </SCRIPT>
+  </body>
+</html>
